@@ -32,9 +32,17 @@
        y2="1294.3201"
        gradientUnits="userSpaceOnUse" />
   </defs>
+  <rect
+     style="display:block;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke-width:37.4172"
+     id="rect94"
+     width="9912.5"
+     height="9887.5"
+     x="43.75"
+     y="56.25"
+     ry="1012.5" />
   <g
      id="g94"
-     transform="matrix(9,0,0,9,-4199.5222,-4033.666)">
+     transform="matrix(8.1,0,0,8.1,-3279.8032,-3134.9732)">
     <path
        fill="#aacfc5"
        d="m 879.907,457.074 287.193,0.013 -0.04,44.864 c 3.24,2.867 19.75,10 24.69,12.47 12.96,6.389 25.44,13.717 37.34,21.925 78.92,53.715 132.96,136.868 150,230.798 12.52,69.299 4.93,140.734 -21.87,205.854 -8.68,20.541 -18.4,37.682 -29.72,56.732 18.94,13.51 47.27,27.25 50.42,52.85 5.72,46.45 -38.14,84.91 -83.06,84.54 0.53,23.93 -10.04,31.78 -28.9,43.66 -4.61,0.9 -25.48,8.76 -29.32,11.4 -12.66,3.85 -22.53,6.73 -35.1,11.68 11.08,20.27 22.39,40.42 33.92,60.44 6.74,11.63 16.42,24.62 20.57,37.25 1.43,4.36 1.57,9.28 0.11,13.65 -1.41,4.24 -4.37,7.86 -8.54,9.61 -9.99,4.19 -175.54,2.01 -200.84,2.06 -4.61,3.06 -15.6,21.21 -19.27,26.94 1.94,-7.89 3.5,-18.51 4.93,-26.69 -28.6,-0.87 -60.612,-0.17 -89.498,-0.1 6.748,8.19 12.838,14.25 20.284,21.72 -7.797,-2.97 -48.949,-21.18 -51.701,-21.25 -76.999,-2.02 -158.286,1.39 -235,-0.66 -9.764,0.27 -24.941,2.21 -32.955,-4.51 -6.784,-5.53 -8.332,-16.91 -3.643,-24.51 23.303,-37.75 46.685,-78.72 73.336,-113.89 6.228,-8.21 43.978,-5.3 55.949,-5.06 -2.274,-2.19 -4.507,-4.42 -6.695,-6.69 -5.814,-6.13 -5.818,-9.83 -5.651,-17.91 -35.837,-0.22 -59.182,-10.03 -81.318,-39.6 -12.224,-16.33 -19.467,-35.55 -16.267,-56.17 5.217,-33.6 37.786,-41.64 61.454,-59.23 l 1.29,-0.97 c -14.69,-20 -26.869,-45.052 -35.717,-68.234 -33.809,-89.729 -30.792,-189.182 8.394,-276.697 35.033,-77.778 105.228,-148.903 185.278,-179.32 -0.405,-15.261 -0.089,-31.622 -0.053,-46.965 z"
@@ -427,13 +435,13 @@
   </g>
   <text
      xml:space="preserve"
-     style="font-style:italic;font-weight:bold;font-size:1840px;font-family:'Trebuchet MS';-inkscape-font-specification:'Trebuchet MS Bold Italic';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#14213d;fill-opacity:1;fill-rule:evenodd;stroke-width:37.7952"
-     x="5001.3477"
-     y="9826.5234"
+     style="font-style:italic;font-weight:bold;font-size:1656px;font-family:'Trebuchet MS';-inkscape-font-specification:'Trebuchet MS Bold Italic';text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#14213d;fill-opacity:1;fill-rule:evenodd;stroke-width:34.0157"
+     x="5000.9795"
+     y="9339.1973"
      id="text94"><tspan
        id="tspan94"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:1840px;font-family:'Good Timing';-inkscape-font-specification:'Good Timing Bold';text-align:center;text-anchor:middle;stroke-width:37.7953"
-       x="5001.3477"
-       y="9826.5234"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:1656px;font-family:'Good Timing';-inkscape-font-specification:'Good Timing Bold';text-align:center;text-anchor:middle;stroke-width:34.0158"
+       x="5000.9795"
+       y="9339.1973"
        transform="translate(3826.8945)">SilentHID</tspan></text>
 </svg>
