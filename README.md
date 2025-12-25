@@ -7,7 +7,9 @@
 
 HID (Keyboard & Mouse) over Secure WebSocket for robotic remote control of PCs.
 
-SilentHID enables humanoid robots or remote systems to control a PC's keyboard and mouse without physical interaction. The device appears as a standard USB HID device to the target computer while receiving commands over a secure TLS WebSocket connection. This solution is part of a Vision Based GUI Agent pipeline, enabling humanoid robots to interact with standard PC/Mac/Mobile interfaces through visual perception and physical-free HID control. A separate solution is in charge of screen capture (with passthrough), analysis and translating a list of actions, like  "Add a new row in this excel file and type ABC123", into SilentHID actions. This way, for rapid deployment and trial, the human can replace the machine, and vice versa without the need for complex integration with the customer software stack and/or ERP APIs.
+SilentHID enables humanoid robots or remote systems to control a PC's keyboard and mouse without physical interaction. The device appears as a standard USB HID device to the target computer while receiving commands over a secure TLS WebSocket connection.
+
+This solution is part of a Vision Based GUI Agent pipeline, enabling humanoid robots to interact with standard PC/Mac/Mobile interfaces through visual perception and physical-free HID control. A separate solution is in charge of screen capture (with passthrough), analysis and translating a list of actions, like  "Add a new row in this excel file and type ABC123", into SilentHID actions. This way, for rapid deployment and trial, the human can replace the machine, and vice versa without the need for complex integration with the customer software stack and/or ERP APIs.
 
 ## Features
 
