@@ -218,4 +218,3 @@ Contributions welcome! Please open an issue or submit a pull request.
 ## Acknowledgments
 
 - Built for humanoid robots who prefer not to touch keyboards... 😎
-```
