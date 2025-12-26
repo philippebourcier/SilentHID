@@ -62,7 +62,7 @@ xxd -i key.der
 ### 3. Flash
 
 1. Open the .INO file in Arduino IDE
-2. Connect the w55rp20-evb-pico via USB.
+2. Connect the w55rp20-evb-pico via USB and set speed to 115200 in the Serial Monitor
 3. Select board: **WIZnet W55RP20-EVB-Pico**
 4. Select USB Stack: **Adafruit TinyUSB**
 5. While holding down the BOOTSEL button, press the Reset button briefly once
