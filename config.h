@@ -37,7 +37,7 @@ static const char html_page[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HID Control</title>
+<title>SilentHID Control</title>
 <style>
 *{box-sizing:border-box;font-family:system-ui,sans-serif;margin:0;padding:0}
 body{background:#1a1a2e;color:#eee;padding:10px;height:100vh;display:flex;flex-direction:column}
@@ -84,7 +84,7 @@ button{padding:5px 10px;border:none;border-radius:3px;cursor:pointer;font-size:1
 </head>
 <body>
 <div class="head">
-<div><h1>🎮 HID Control</h1><span class="sub">Keyboard & Mouse over WebSocket</span></div>
+<div><h1>🤖 SilentHID Control</h1><span class="sub">Keyboard & Mouse over Secure WebSocket</span></div>
 <div>Status: <span id="st" class="status g">...</span></div>
 </div>
 <div class="main">
@@ -175,3 +175,4 @@ document.addEventListener('DOMContentLoaded',()=>{const p=$('pad');p.addEventLis
 #endif
 
 #endif
+
