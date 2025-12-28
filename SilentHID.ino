@@ -1,6 +1,25 @@
 /*
  * W55RP20 HTTPS WebSocket HID Server
  * TLS + WebSocket + USB HID (Mouse/Keyboard)
+ * With Absolute Mouse Support and Dynamic Screen Resolution
+ * 
+ * Commands:
+ *   MM:x,y    - Relative mouse move
+ *   MA:x,y    - Absolute mouse move (pixels)
+ *   MF:x,y    - Absolute mouse move (ratio 0.0-1.0)
+ *   MC:b      - Mouse click (b = l/r/m)
+ *   MP:b      - Mouse press
+ *   MR:b      - Mouse release
+ *   MS:n      - Mouse scroll
+ *   CA:x,y,b  - Click at absolute position (pixels)
+ *   CF:x,y,b  - Click at ratio position (0.0-1.0)
+ *   SR:w,h    - Set screen resolution
+ *   GR        - Get screen resolution
+ *   KT:text   - Type text
+ *   KP:code   - Key press
+ *   KRA       - Key release all
+ *   RST       - Reset HID state
+ *   PNG       - Ping
  */
 
 #include <Arduino.h>
@@ -13,12 +32,15 @@
 #include "types.h"
 
 // ============================================================================
-// USB HID Setup
+// USB HID Descriptors
 // ============================================================================
+
 uint8_t const desc_hid_report[] = {
   TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(1)),
-  TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(2))
+  TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(2)),
+  TUD_HID_REPORT_DESC_ABSMOUSE(HID_REPORT_ID(3))
 };
+
 Adafruit_USBD_HID usb_hid(desc_hid_report, sizeof(desc_hid_report), HID_ITF_PROTOCOL_NONE, 2, false);
 
 // ============================================================================
@@ -48,6 +70,8 @@ br_skey_decoder_context dc;
 
 static uint8_t mouse_buttons = 0;
 static unsigned long lastHidReport = 0;
+static uint16_t screen_width = 1920;
+static uint16_t screen_height = 1080;
 
 // ============================================================================
 // Utility Functions
@@ -248,6 +272,69 @@ void hid_mouse_move(int8_t x, int8_t y, int8_t scroll) {
   lastHidReport = millis();
 }
 
+void hid_mouse_move_absolute(uint16_t x, uint16_t y) {
+  if (!hid_wait_ready()) return;
+  if (x < 1) x = 1;
+  if (y < 1) y = 1;
+  if (x > screen_width) x = screen_width;
+  if (y > screen_height) y = screen_height;
+  uint16_t abs_x = (uint32_t)x * 32767 / screen_width;
+  uint16_t abs_y = (uint32_t)y * 32767 / screen_height;
+  uint8_t report[7];
+  report[0] = mouse_buttons;
+  report[1] = abs_x & 0xFF;
+  report[2] = (abs_x >> 8) & 0xFF;
+  report[3] = abs_y & 0xFF;
+  report[4] = (abs_y >> 8) & 0xFF;
+  report[5] = 0;
+  report[6] = 0;
+  usb_hid.sendReport(3, report, sizeof(report));
+  lastHidReport = millis();
+}
+
+void hid_mouse_move_absolute_ratio(float ratio_x, float ratio_y) {
+  if (ratio_x < 0.0f) ratio_x = 0.0f;
+  if (ratio_x > 1.0f) ratio_x = 1.0f;
+  if (ratio_y < 0.0f) ratio_y = 0.0f;
+  if (ratio_y > 1.0f) ratio_y = 1.0f;
+  uint16_t x = (uint16_t)(ratio_x * screen_width);
+  uint16_t y = (uint16_t)(ratio_y * screen_height);
+  hid_mouse_move_absolute(x, y);
+}
+
+void hid_mouse_click_at(uint16_t x, uint16_t y, uint8_t button) {
+  if (x > screen_width) x = screen_width;
+  if (y > screen_height) y = screen_height;
+  uint16_t abs_x = (uint32_t)x * 32767 / screen_width;
+  uint16_t abs_y = (uint32_t)y * 32767 / screen_height;
+  uint8_t report[7];
+  report[1] = abs_x & 0xFF;
+  report[2] = (abs_x >> 8) & 0xFF;
+  report[3] = abs_y & 0xFF;
+  report[4] = (abs_y >> 8) & 0xFF;
+  report[5] = 0;
+  report[6] = 0;
+  // Move to position first
+  report[0] = mouse_buttons;
+  if (!hid_wait_ready()) return;
+  usb_hid.sendReport(3, report, sizeof(report));
+  lastHidReport = millis();
+  delay(10);
+  // Press button
+  mouse_buttons |= button;
+  report[0] = mouse_buttons;
+  if (!hid_wait_ready()) return;
+  usb_hid.sendReport(3, report, sizeof(report));
+  lastHidReport = millis();
+  delay(50); 
+  // Release button
+  mouse_buttons &= ~button;
+  report[0] = mouse_buttons;
+  if (!hid_wait_ready()) return;
+  usb_hid.sendReport(3, report, sizeof(report));
+  lastHidReport = millis();
+}
+
 void hid_mouse_click(uint8_t button) {
   if (!hid_wait_ready()) return;
   usb_hid.mouseReport(2, button, 0, 0, 0, 0);
@@ -312,8 +399,14 @@ void hid_keyboard_type(const char* str) {
 void hid_reset() {
   hid_keyboard_release();
   mouse_buttons = 0;
-  if (usb_hid.ready()) usb_hid.mouseReport(2, 0, 0, 0, 0, 0);
+  if (usb_hid.ready()) {
+    usb_hid.mouseReport(2, 0, 0, 0, 0, 0);
+    // Reset absolute mouse - 7 bytes
+    uint8_t report[7] = {0, 0, 0, 0, 0, 0, 0};
+    usb_hid.sendReport(3, report, sizeof(report));
+  }
 }
+
 
 // ============================================================================
 // WebSocket Session Handler
@@ -362,6 +455,59 @@ void handleWebSocketSession() {
           hid_mouse_move(0, 0, atoi(cmd + 3));
           sendWsFrame(0x1, (uint8_t*)"OK", 2);
         }
+        else if (strncmp(cmd, "MA:", 3) == 0) {
+          int x = 0, y = 0;
+          if (sscanf(cmd + 3, "%d,%d", &x, &y) == 2) {
+            hid_mouse_move_absolute((uint16_t)x, (uint16_t)y);
+          }
+          sendWsFrame(0x1, (uint8_t*)"OK", 2);
+        }
+        else if (strncmp(cmd, "MF:", 3) == 0) {
+          float x = 0.0f, y = 0.0f;
+          if (sscanf(cmd + 3, "%f,%f", &x, &y) == 2) {
+            hid_mouse_move_absolute_ratio(x, y);
+          }
+          sendWsFrame(0x1, (uint8_t*)"OK", 2);
+        }
+        else if (strncmp(cmd, "CA:", 3) == 0) {
+          int x = 0, y = 0;
+          char btn = 'l';
+          if (sscanf(cmd + 3, "%d,%d,%c", &x, &y, &btn) >= 2) {
+            uint8_t b = (btn == 'l') ? MOUSE_BUTTON_LEFT : (btn == 'r') ? MOUSE_BUTTON_RIGHT : MOUSE_BUTTON_MIDDLE;
+            hid_mouse_click_at((uint16_t)x, (uint16_t)y, b);
+          }
+          sendWsFrame(0x1, (uint8_t*)"OK", 2);
+        }
+        else if (strncmp(cmd, "CF:", 3) == 0) {
+          float x = 0.0f, y = 0.0f;
+          char btn = 'l';
+          if (sscanf(cmd + 3, "%f,%f,%c", &x, &y, &btn) >= 2) {
+            uint8_t b = (btn == 'l') ? MOUSE_BUTTON_LEFT : (btn == 'r') ? MOUSE_BUTTON_RIGHT : MOUSE_BUTTON_MIDDLE;
+            if (x < 0.0f) x = 0.0f; if (x > 1.0f) x = 1.0f;
+            if (y < 0.0f) y = 0.0f; if (y > 1.0f) y = 1.0f;
+            uint16_t px = (uint16_t)(x * screen_width);
+            uint16_t py = (uint16_t)(y * screen_height);
+            hid_mouse_click_at(px, py, b);
+          }
+          sendWsFrame(0x1, (uint8_t*)"OK", 2);
+        }
+        else if (strncmp(cmd, "SR:", 3) == 0) {
+          int w = 0, h = 0;
+          if (sscanf(cmd + 3, "%d,%d", &w, &h) == 2) {
+            if (w > 0 && w <= 7680 && h > 0 && h <= 4320) {
+              screen_width = (uint16_t)w;
+              screen_height = (uint16_t)h;
+            }
+          }
+          char resp[32];
+          snprintf(resp, sizeof(resp), "OK:%d,%d", screen_width, screen_height);
+          sendWsFrame(0x1, (uint8_t*)resp, strlen(resp));
+        }
+        else if (strcmp(cmd, "GR") == 0) {
+          char resp[32];
+          snprintf(resp, sizeof(resp), "%d,%d", screen_width, screen_height);
+          sendWsFrame(0x1, (uint8_t*)resp, strlen(resp));
+        }
         else if (strncmp(cmd, "KT:", 3) == 0) {
           hid_keyboard_type(cmd + 3);
           sendWsFrame(0x1, (uint8_t*)"OK", 2);
@@ -374,8 +520,15 @@ void handleWebSocketSession() {
           hid_keyboard_release();
           sendWsFrame(0x1, (uint8_t*)"OK", 2);
         }
+        else if (strcmp(cmd, "RST") == 0) {
+          hid_reset();
+          sendWsFrame(0x1, (uint8_t*)"OK", 2);
+        }
+        else if (strcmp(cmd, "PNG") == 0) {
+          sendWsFrame(0x1, (uint8_t*)"PON", 3);
+        }
         else {
-          sendWsFrame(0x1, (uint8_t*)"ERR", 3);
+          sendWsFrame(0x1, (uint8_t*)"ERR", 11);
         }
       }
       else if (frame.opcode == 0x9) sendWsFrame(0xA, frame.payload, frame.payloadLen);  // PING->PONG
@@ -399,6 +552,10 @@ void setup() {
   Ethernet.begin(mac, ip);
   Serial.print("HTTPS HID Server: https://");
   Serial.println(Ethernet.localIP());
+  Serial.print("Resolution: ");
+  Serial.print(screen_width);
+  Serial.print("x");
+  Serial.println(screen_height);
   
   server.begin();
   
@@ -470,11 +627,7 @@ void loop() {
         else {
           if (authEnd) *authEnd = '\r';
           DEBUG_PRINTLN("Serving HTML...");
-          
-          // Calculate content length
           size_t htmlLen = strlen_P(html_page);
-          
-          // Send headers
           char headers[128];
           snprintf(headers, sizeof(headers),
             "HTTP/1.1 200 OK\r\n"
@@ -482,8 +635,6 @@ void loop() {
             "Content-Length: %d\r\n"
             "Connection: close\r\n\r\n", htmlLen);
           tlsWrite((uint8_t*)headers, strlen(headers));
-          
-          // Send HTML in chunks (PROGMEM)
           const char* ptr = html_page;
           char chunk[256];
           size_t remaining = htmlLen;
@@ -494,13 +645,7 @@ void loop() {
             ptr += chunkSize;
             remaining -= chunkSize;
           }
-          
           handled = true;
-
-        //   if (authEnd) *authEnd = '\r';
-        //   const char* r = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nHID Server OK";
-        //   tlsWrite((uint8_t*)r, strlen(r));
-        //   handled = true;
         }
       }
     }
