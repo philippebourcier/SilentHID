@@ -88,6 +88,8 @@ The built-in control panel provides:
 
 Commands are sent as plain text over the WebSocket connection:
 
+### Relative Mouse Commands
+
 | Command | Format | Description |
 |---------|--------|-------------|
 | Mouse Move | `MM:x,y` | Relative mouse movement (-127 to 127) |
@@ -95,11 +97,30 @@ Commands are sent as plain text over the WebSocket connection:
 | Mouse Press | `MP:l\|r\|m` | Press and hold button |
 | Mouse Release | `MR:l\|r\|m` | Release button |
 | Mouse Scroll | `MS:n` | Scroll wheel (negative = down) |
+
+### Absolute Mouse Commands
+
+| Command | Format | Description |
+|---------|--------|-------------|
+| Absolute Move | `MA:x,y` | Move cursor to pixel position |
+| Ratio Move | `MF:rx,ry` | Move cursor to ratio position (0.0-1.0) |
+| Click At | `CA:x,y,b` | Click at pixel position (b = l/r/m) |
+| Click At Ratio | `CF:rx,ry,b` | Click at ratio position (b = l/r/m) |
+
+### Screen Resolution
+
+| Command | Format | Description |
+|---------|--------|-------------|
+| Set Resolution | `SR:w,h` | Set screen resolution (for absolute positioning) |
+| Get Resolution | `GR` | Get current screen resolution |
+
+### Keyboard Commands
+
+| Command | Format | Description |
+|---------|--------|-------------|
 | Keyboard Type | `KT:text` | Type a string |
 | Keyboard Press | `KP:keycode` | Press a key (HID keycode) |
 | Keyboard Release | `KRA` | Release all keys |
-
-All commands return `OK` on success or `ERR` on failure.
 
 ### HID Keycodes
 
@@ -112,6 +133,17 @@ All commands return `OK` on success or `ERR` on failure.
 | Delete | 76 | End | 77 | Page Down | 78 |
 | Right | 79 | Left | 80 | Down | 81 |
 | Up | 82 | | | | |
+
+### System Commands
+
+| Command | Format | Description |
+|---------|--------|-------------|
+| Reset | `RST` | Reset all HID states |
+| Ping | `PNG` | Keep-alive ping (returns `PON`) |
+
+All commands return `OK` on success or `ERR:reason` on failure.
+Set Resolution returns `OK:w,h` with the current resolution.
+Get Resolution returns `w,h`.
 
 ## Integration Example
 
